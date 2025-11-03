@@ -6,8 +6,48 @@ public class LottoGame {
 
     public void start() {
         int purchaseAmount = getPurchaseAmount();
+
+        LottoMachine lottoMachine = new LottoMachine();
+        java.util.List<Lotto> purchasedLottos = lottoMachine.purchaseLottos(purchaseAmount);
+
+        System.out.println("\n" + purchasedLottos.size() + "개를 구매했습니다.");
+        for (Lotto lotto : purchasedLottos) {
+            System.out.println(lotto.getNumbers());
+        }
+
         Lotto winningLotto = getWinningLotto();
         int bonusNumber = getBonusNumber(winningLotto);
+
+        Result result = calculateResults(purchasedLottos, winningLotto, bonusNumber);
+        printResults(result, purchaseAmount);
+    }
+
+    private Result calculateResults(java.util.List<Lotto> purchasedLottos, Lotto winningLotto, int bonusNumber) {
+        Result result = new Result();
+        for (Lotto lotto : purchasedLottos) {
+            int matchCount = countMatches(lotto, winningLotto);
+            boolean bonusMatch = lotto.getNumbers().contains(bonusNumber);
+            Rank rank = Rank.valueOf(matchCount, bonusMatch);
+            result.add(rank);
+        }
+        return result;
+    }
+
+    private int countMatches(Lotto lotto, Lotto winningLotto) {
+        return (int) lotto.getNumbers().stream()
+                .filter(winningLotto.getNumbers()::contains)
+                .count();
+    }
+
+    private void printResults(Result result, int purchaseAmount) {
+        System.out.println("\n당첨 통계");
+        System.out.println("---");
+        System.out.printf("3개 일치 (%,d원) - %d개\n", Rank.FIFTH.getPrizeMoney(), result.getCount(Rank.FIFTH));
+        System.out.printf("4개 일치 (%,d원) - %d개\n", Rank.FOURTH.getPrizeMoney(), result.getCount(Rank.FOURTH));
+        System.out.printf("5개 일치 (%,d원) - %d개\n", Rank.THIRD.getPrizeMoney(), result.getCount(Rank.THIRD));
+        System.out.printf("5개 일치, 보너스 볼 일치 (%,d원) - %d개\n", Rank.SECOND.getPrizeMoney(), result.getCount(Rank.SECOND));
+        System.out.printf("6개 일치 (%,d원) - %d개\n", Rank.FIRST.getPrizeMoney(), result.getCount(Rank.FIRST));
+        System.out.printf("총 수익률은 %.1f%%입니다.\n", result.calculateRateOfReturn(purchaseAmount));
     }
 
     private int getBonusNumber(Lotto winningLotto) {
