@@ -12,6 +12,10 @@ public class Lotto {
     this.numbers = numbers;
   }
 
+  public List<Integer> getNumbers() {
+    return numbers;
+  }
+
   // 당첨 번호 유효성 검사
   private void validate(List<Integer> numbers) {
     validateNumberSize(numbers);
